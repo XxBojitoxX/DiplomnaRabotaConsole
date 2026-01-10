@@ -1,0 +1,2 @@
+/Users/bojkata37/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/bin/Release/net10.0/osx-x64/publish/DiplomnaRabotaConsole.pdb
+/Users/bojkata37/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/bin/Release/net10.0/osx-x64/publish/DiplomnaRabotaConsole
