@@ -81,11 +81,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/bojkata37/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/DiplomnaRabotaConsole.csproj",
+      "projectUniqueName": "/Users/bojkata37/Library/Mobile Documents/com~apple~CloudDocs/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/DiplomnaRabotaConsole.csproj",
       "projectName": "DiplomnaRabotaConsole",
-      "projectPath": "/Users/bojkata37/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/DiplomnaRabotaConsole.csproj",
+      "projectPath": "/Users/bojkata37/Library/Mobile Documents/com~apple~CloudDocs/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/DiplomnaRabotaConsole.csproj",
       "packagesPath": "/Users/bojkata37/.nuget/packages/",
-      "outputPath": "/Users/bojkata37/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/obj/",
+      "outputPath": "/Users/bojkata37/Library/Mobile Documents/com~apple~CloudDocs/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/bojkata37/.nuget/NuGet/NuGet.Config"

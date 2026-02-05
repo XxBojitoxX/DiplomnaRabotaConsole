@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "3lcMTLCltTo=",
+  "dgSpecHash": "GbNc0DrYoRc=",
   "success": true,
-  "projectFilePath": "/Users/bojkata37/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/DiplomnaRabotaConsole.csproj",
+  "projectFilePath": "/Users/bojkata37/Library/Mobile Documents/com~apple~CloudDocs/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/DiplomnaRabotaConsole.csproj",
   "expectedPackageFiles": [
     "/Users/bojkata37/.nuget/packages/microsoft.net.illink.tasks/10.0.0/microsoft.net.illink.tasks.10.0.0.nupkg.sha512",
     "/Users/bojkata37/.nuget/packages/microsoft.netcore.app.runtime.osx-x64/10.0.0/microsoft.netcore.app.runtime.osx-x64.10.0.0.nupkg.sha512",
