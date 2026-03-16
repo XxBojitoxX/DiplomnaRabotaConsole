@@ -97,6 +97,11 @@ namespace DiplomnaRabotaConsole
             string destPath = Path.Combine(targetFolder, Path.GetFileName(sourcePath));
             File.Copy(sourcePath, destPath, overwrite: true);
         }
+        public void MovePath(string source, string destination)
+        {
+            if (File.Exists(source)) File.Move(source, Path.Combine(destination, Path.GetFileName(source)));
+            else if (Directory.Exists(source)) Directory.Move(source, Path.Combine(destination, new DirectoryInfo(source).Name));
+        }
     }
 
     // ==========================================
