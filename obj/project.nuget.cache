@@ -1,12 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "GbNc0DrYoRc=",
+  "dgSpecHash": "42pcoVSqQkI=",
   "success": true,
-  "projectFilePath": "/Users/bojkata37/Library/Mobile Documents/com~apple~CloudDocs/Documents/Code/DiplomnaRabota/DiplomnaRabotaConsole/DiplomnaRabotaConsole.csproj",
+  "projectFilePath": "C:\\Users\\bojkata\\Documents\\Diplomna\\DiplomnaRabotaConsole\\DiplomnaRabotaConsole.csproj",
   "expectedPackageFiles": [
-    "/Users/bojkata37/.nuget/packages/microsoft.net.illink.tasks/10.0.0/microsoft.net.illink.tasks.10.0.0.nupkg.sha512",
-    "/Users/bojkata37/.nuget/packages/microsoft.netcore.app.runtime.osx-x64/10.0.0/microsoft.netcore.app.runtime.osx-x64.10.0.0.nupkg.sha512",
-    "/Users/bojkata37/.nuget/packages/microsoft.aspnetcore.app.runtime.osx-x64/10.0.0/microsoft.aspnetcore.app.runtime.osx-x64.10.0.0.nupkg.sha512"
+    "C:\\Users\\bojkata\\.nuget\\packages\\spectre.console\\0.49.1\\spectre.console.0.49.1.nupkg.sha512"
   ],
   "logs": []
 }

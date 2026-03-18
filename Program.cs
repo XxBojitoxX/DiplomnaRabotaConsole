@@ -2,292 +2,161 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
+using Spectre.Console;
 
 namespace DiplomnaRabotaConsole
 {
-    // ==========================================
-    // 1. THE DATA MODEL
-    // ==========================================
     public class FileNode
     {
         public string FullPath { get; set; } = string.Empty;
+        public string Name => System.IO.Path.GetFileName(FullPath);
         public long SizeBytes { get; set; }
-        public int ItemCount { get; set; }
         public bool IsDirectory { get; set; }
         public List<FileNode> Children { get; set; } = new List<FileNode>();
-
-        public string FormattedSize => $"{SizeBytes / 1024.0 / 1024.0:F2} MB";
+        public string FormattedSize => IsDirectory ? "--" : $"{SizeBytes / 1024.0 / 1024.0:F2} MB";
     }
 
-    // ==========================================
-    // 2. THE LOGIC ENGINE
-    // ==========================================
     public class ScannerService
     {
         public FileNode ScanDirectory(string path)
         {
-            var node = new FileNode
-            {
-                FullPath = path,
-                IsDirectory = true
-            };
-
+            var node = new FileNode { FullPath = path, IsDirectory = true };
             try
             {
                 var dirInfo = new DirectoryInfo(path);
-
-                // Scan Subdirectories
                 foreach (var dir in dirInfo.GetDirectories())
                 {
-                    var childNode = ScanDirectory(dir.FullName);
-                    node.Children.Add(childNode);
-                    node.SizeBytes += childNode.SizeBytes;
-                    node.ItemCount += childNode.ItemCount;
+                    var child = ScanDirectory(dir.FullName);
+                    node.Children.Add(child);
+                    node.SizeBytes += child.SizeBytes;
                 }
-
-                // Scan Files
                 foreach (var file in dirInfo.GetFiles())
                 {
-                    var fileNode = new FileNode
-                    {
-                        FullPath = file.FullName,
-                        SizeBytes = file.Length,
-                        ItemCount = 1,
-                        IsDirectory = false
-                    };
-                    node.Children.Add(fileNode);
-                    node.SizeBytes += fileNode.SizeBytes;
-                    node.ItemCount++;
+                    node.Children.Add(new FileNode { FullPath = file.FullName, SizeBytes = file.Length, IsDirectory = false });
+                    node.SizeBytes += file.Length;
                 }
             }
-            catch (UnauthorizedAccessException)
-            {
-                Console.WriteLine($"[!] Access Denied: {path}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[!] Error scanning {path}: {ex.Message}");
-            }
-
+            catch { /* Silently skip folders without permission */ }
             return node;
         }
 
-        public void DeletePath(string path)
+        public void CopyPath(string source, string targetFolder)
         {
-            // Check existence before trying to delete to avoid crashing on stale IDs
-            if (Directory.Exists(path))
-            {
-                Directory.Delete(path, true);
-            }
-            else if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-            else
-            {
-                throw new FileNotFoundException("Path not found (it might already be deleted)", path);
-            }
+            try {
+                if (System.IO.File.Exists(source))
+                {
+                    string dest = System.IO.Path.Combine(targetFolder, System.IO.Path.GetFileName(source));
+                    System.IO.File.Copy(source, dest, true);
+                }
+                else if (System.IO.Directory.Exists(source))
+                {
+                    string name = new DirectoryInfo(source).Name;
+                    CopyDirectory(source, System.IO.Path.Combine(targetFolder, name));
+                }
+            } catch (Exception ex) { AnsiConsole.WriteException(ex); }
         }
 
-        public void CopyFile(string sourcePath, string targetFolder)
+        private void CopyDirectory(string source, string dest)
         {
-            if (!File.Exists(sourcePath)) throw new FileNotFoundException("Source file missing");
-            if (!Directory.Exists(targetFolder)) throw new DirectoryNotFoundException("Target folder missing");
-
-            string destPath = Path.Combine(targetFolder, Path.GetFileName(sourcePath));
-            File.Copy(sourcePath, destPath, overwrite: true);
-        }
-        public void MovePath(string source, string destination)
-        {
-            if (File.Exists(source)) File.Move(source, Path.Combine(destination, Path.GetFileName(source)));
-            else if (Directory.Exists(source)) Directory.Move(source, Path.Combine(destination, new DirectoryInfo(source).Name));
+            System.IO.Directory.CreateDirectory(dest);
+            foreach (var f in System.IO.Directory.GetFiles(source)) 
+                System.IO.File.Copy(f, System.IO.Path.Combine(dest, System.IO.Path.GetFileName(f)), true);
+            foreach (var d in System.IO.Directory.GetDirectories(source)) 
+                CopyDirectory(d, System.IO.Path.Combine(dest, System.IO.Path.GetFileName(d)));
         }
     }
 
-    // ==========================================
-    // 3. THE PROGRAM (Now with Indexing!)
-    // ==========================================
     class Program
     {
         private static ScannerService _scanner = new ScannerService();
         private static string? _clipboardPath = null;
-        
-        // This list remembers what we saw in the last scan so we can pick by ID
-        private static List<FileNode> _sessionFiles = new List<FileNode>(); 
 
+        [STAThread]
         static void Main(string[] args)
         {
-            Console.WriteLine("=== FILE SCANNER CONSOLE v2.0 (Advanced) ===");
-
+            // Helps the folder picker look modern
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            
+            AnsiConsole.Write(new FigletText("File Manager").Color(Spectre.Console.Color.Cyan1));
+            
             while (true)
             {
-                Console.WriteLine("\nCommands: [scan] [copy] [paste] [delete] [exit]");
-                Console.Write("> ");
-                var input = Console.ReadLine()?.Trim().ToLower();
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[yellow]Main Menu[/]")
+                        .AddChoices(new[] { "Select Folder", "View Clipboard", "Exit" }));
 
-                switch (input)
+                if (choice == "Exit") break;
+                if (choice == "Select Folder") HandleScan();
+                else if (choice == "View Clipboard")
                 {
-                    case "scan":
-                        HandleScan();
-                        break;
-                    case "copy":
-                        HandleCopy();
-                        break;
-                    case "paste":
-                        HandlePaste();
-                        break;
-                    case "delete":
-                        HandleDelete();
-                        break;
-                    case "exit":
-                        return;
-                    default:
-                        Console.WriteLine("Unknown command.");
-                        break;
+                    AnsiConsole.MarkupLine(_clipboardPath == null ? "[red]Clipboard is empty[/]" : $"[green]Copied:[/] {_clipboardPath}");
+                    AnsiConsole.WriteLine("Press any key to continue...");
+                    Console.ReadKey(true);
                 }
             }
         }
 
         static void HandleScan()
         {
-            Console.Write("Enter folder to scan: ");
-            string path = Console.ReadLine()?.Replace("\"", "") ?? "";
-
-            if (Directory.Exists(path))
+            using var dialog = new FolderBrowserDialog();
+            dialog.Description = "Pick a directory to scan";
+            if (dialog.ShowDialog() == DialogResult.OK)
             {
-                Console.WriteLine("Scanning... processing index.");
-                
-                // Clear the memory of the previous scan
-                _sessionFiles.Clear();
-                
-                var root = _scanner.ScanDirectory(path);
-                
-                Console.WriteLine("\n--- Scan Results ---");
-                Console.WriteLine("ID\tType\tSize\tName");
-                Console.WriteLine("---------------------------------------------");
-                
-                // Start recursive printing and indexing
-                PrintAndIndexTree(root, "");
-                
-                Console.WriteLine($"\nTotal: {root.FormattedSize} across {root.ItemCount} items.");
-            }
-            else
-            {
-                Console.WriteLine("Invalid directory.");
+                FileNode? root = null;
+                AnsiConsole.Status().Start("Scanning files...", ctx => {
+                    root = _scanner.ScanDirectory(dialog.SelectedPath);
+                });
+                if (root != null) ShowBrowser(root);
             }
         }
 
-        // Modified to Flatten the list into _sessionFiles AND Print at the same time
-        static void PrintAndIndexTree(FileNode node, string indent)
+        static void ShowBrowser(FileNode folder)
         {
-            if (indent.Length > 12) return; // Prevent messy deep nesting
-
-            // Add to our quick-access list
-            _sessionFiles.Add(node);
-            int id = _sessionFiles.Count - 1; // The index of this item
-
-            string typeIcon = node.IsDirectory ? "[DIR]" : "[FILE]";
-            Console.WriteLine($"{id}\t{typeIcon}\t{node.FormattedSize}\t{indent}+ {Path.GetFileName(node.FullPath)}");
-
-            foreach (var child in node.Children)
+            while (true)
             {
-                // Removed the 'if Directory' check so you can see individual files now
-                PrintAndIndexTree(child, indent + "  ");
-            }
-        }
+                AnsiConsole.Clear();
+                AnsiConsole.Write(new Rule($"[blue]Folder: {folder.Name}[/]"));
 
-        static void HandleCopy()
-        {
-            Console.Write("Enter path OR File ID to copy: ");
-            string input = Console.ReadLine()?.Replace("\"", "") ?? "";
+                // Dynamic height logic
+                int dynamicPageSize = Math.Max(5, Console.WindowHeight - 8);
 
-            string? selectedPath = ResolvePath(input);
+                var prompt = new SelectionPrompt<FileNode>()
+                    .PageSize(dynamicPageSize)
+                    .Title("[grey]Use Arrows to navigate, Enter to select, or Type to search[/]")
+                    .EnableSearch() // NEW: Allows typing to filter the list!
+                    .UseConverter(n => n.FullPath == ".." ? "[yellow].. (Back)[/]" : 
+                                      (n.IsDirectory ? $"[blue]📁 {n.Name}[/]" : $"[white]📄 {n.Name}[/] [grey]({n.FormattedSize})[/]"));
 
-            if (selectedPath != null)
-            {
-                _clipboardPath = selectedPath;
-                Console.WriteLine($"Copied to clipboard: {_clipboardPath}");
-            }
-        }
+                prompt.AddChoice(new FileNode { FullPath = ".." });
+                prompt.AddChoices(folder.Children.OrderByDescending(x => x.IsDirectory).ThenBy(x => x.Name));
 
-        static void HandleDelete()
-        {
-            if (_sessionFiles.Count == 0)
-            {
-                Console.WriteLine("No files scanned yet. Run 'scan' first to get IDs.");
-                // Fallback to manual path entry if they really want
-            }
+                var selected = AnsiConsole.Prompt(prompt);
+                if (selected.FullPath == "..") return;
 
-            Console.Write("Enter path OR ID to delete: ");
-            string input = Console.ReadLine()?.Replace("\"", "") ?? "";
+                var action = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                    .Title($"[yellow]Actions for {selected.Name}:[/]")
+                    .AddChoices(selected.IsDirectory ? 
+                        new[] { "Open", "Copy Path", "Paste Into", "Delete", "Cancel" } : 
+                        new[] { "Copy Path", "Delete", "Cancel" }));
 
-            string? pathToDelete = ResolvePath(input);
-
-            if (pathToDelete == null) return;
-
-            Console.Write($"⚠ WARNING: Are you sure you want to PERMANENTLY DELETE:\n   {pathToDelete}\n   (y/n): ");
-            if (Console.ReadLine()?.Trim().ToLower() == "y")
-            {
-                try {
-                    _scanner.DeletePath(pathToDelete);
-                    Console.WriteLine("Deleted successfully.");
-                } catch (Exception ex) {
-                    Console.WriteLine($"Error: {ex.Message}");
-                }
-            }
-        }
-
-        static void HandlePaste()
-        {
-            if (string.IsNullOrEmpty(_clipboardPath))
-            {
-                Console.WriteLine("Clipboard empty. Use 'copy' first.");
-                return;
-            }
-
-            Console.Write("Enter destination folder path OR ID: ");
-            string input = Console.ReadLine()?.Replace("\"", "") ?? "";
-            
-            string? destPath = ResolvePath(input);
-
-            if (destPath != null)
-            {
-                try {
-                    // If they picked a file as destination, try to find its parent folder
-                    if (File.Exists(destPath)) 
+                if (action == "Open") ShowBrowser(selected);
+                else if (action == "Copy Path") { _clipboardPath = selected.FullPath; }
+                else if (action == "Paste Into") { _scanner.CopyPath(_clipboardPath!, selected.FullPath); }
+                else if (action == "Delete")
+                {
+                    if (AnsiConsole.Confirm($"[red]Delete {selected.Name}?[/]"))
                     {
-                        destPath = Path.GetDirectoryName(destPath) ?? destPath;
+                        try {
+                            if (selected.IsDirectory) System.IO.Directory.Delete(selected.FullPath, true);
+                            else System.IO.File.Delete(selected.FullPath);
+                            folder.Children.Remove(selected);
+                        } catch (Exception ex) { AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]"); Console.ReadKey(); }
                     }
-
-                    _scanner.CopyFile(_clipboardPath, destPath);
-                    Console.WriteLine("Pasted successfully.");
-                } catch (Exception ex) {
-                    Console.WriteLine($"Error: {ex.Message}");
                 }
             }
-        }
-
-        // Helper to figure out if user typed "5" (ID) or "C:\Folder" (Path)
-        static string? ResolvePath(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input)) return null;
-
-            // 1. Try to parse as an ID (Integer)
-            if (int.TryParse(input, out int id))
-            {
-                if (id >= 0 && id < _sessionFiles.Count)
-                {
-                    return _sessionFiles[id].FullPath;
-                }
-                else
-                {
-                    Console.WriteLine($"ID {id} is out of range.");
-                    return null;
-                }
-            }
-
-            // 2. Otherwise treat it as a raw path
-            return input;
         }
     }
 }
