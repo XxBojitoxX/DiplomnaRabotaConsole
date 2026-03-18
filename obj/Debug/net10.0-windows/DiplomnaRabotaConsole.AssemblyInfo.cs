@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DiplomnaRabotaConsole")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9716267f89fe135eb67a721edbe7f328995e7ff7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6d99be34826940641f9c00768f56fbf44339a357")]
 [assembly: System.Reflection.AssemblyProductAttribute("DiplomnaRabotaConsole")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DiplomnaRabotaConsole")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

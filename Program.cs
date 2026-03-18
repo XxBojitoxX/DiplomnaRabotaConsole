@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 using Spectre.Console;
 
 namespace DiplomnaRabotaConsole
@@ -10,7 +9,7 @@ namespace DiplomnaRabotaConsole
     public class FileNode
     {
         public string FullPath { get; set; } = string.Empty;
-        public string Name => System.IO.Path.GetFileName(FullPath);
+        public string Name => Path.GetFileName(FullPath) ?? FullPath;
         public long SizeBytes { get; set; }
         public bool IsDirectory { get; set; }
         public List<FileNode> Children { get; set; } = new List<FileNode>();
@@ -37,33 +36,33 @@ namespace DiplomnaRabotaConsole
                     node.SizeBytes += file.Length;
                 }
             }
-            catch { /* Silently skip folders without permission */ }
+            catch { /* Ignore access errors */ }
             return node;
         }
 
         public void CopyPath(string source, string targetFolder)
         {
             try {
-                if (System.IO.File.Exists(source))
+                if (File.Exists(source))
                 {
-                    string dest = System.IO.Path.Combine(targetFolder, System.IO.Path.GetFileName(source));
-                    System.IO.File.Copy(source, dest, true);
+                    string dest = Path.Combine(targetFolder, Path.GetFileName(source));
+                    File.Copy(source, dest, true);
                 }
-                else if (System.IO.Directory.Exists(source))
+                else if (Directory.Exists(source))
                 {
                     string name = new DirectoryInfo(source).Name;
-                    CopyDirectory(source, System.IO.Path.Combine(targetFolder, name));
+                    CopyDirectory(source, Path.Combine(targetFolder, name));
                 }
             } catch (Exception ex) { AnsiConsole.WriteException(ex); }
         }
 
         private void CopyDirectory(string source, string dest)
         {
-            System.IO.Directory.CreateDirectory(dest);
-            foreach (var f in System.IO.Directory.GetFiles(source)) 
-                System.IO.File.Copy(f, System.IO.Path.Combine(dest, System.IO.Path.GetFileName(f)), true);
-            foreach (var d in System.IO.Directory.GetDirectories(source)) 
-                CopyDirectory(d, System.IO.Path.Combine(dest, System.IO.Path.GetFileName(d)));
+            Directory.CreateDirectory(dest);
+            foreach (var f in Directory.GetFiles(source)) 
+                File.Copy(f, Path.Combine(dest, Path.GetFileName(f)), true);
+            foreach (var d in Directory.GetDirectories(source)) 
+                CopyDirectory(d, Path.Combine(dest, Path.GetFileName(d)));
         }
     }
 
@@ -72,13 +71,8 @@ namespace DiplomnaRabotaConsole
         private static ScannerService _scanner = new ScannerService();
         private static string? _clipboardPath = null;
 
-        [STAThread]
         static void Main(string[] args)
         {
-            // Helps the folder picker look modern
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            
             AnsiConsole.Write(new FigletText("File Manager").Color(Spectre.Console.Color.Cyan1));
             
             while (true)
@@ -86,14 +80,14 @@ namespace DiplomnaRabotaConsole
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[yellow]Main Menu[/]")
-                        .AddChoices(new[] { "Select Folder", "View Clipboard", "Exit" }));
+                        .AddChoices(new[] { "📁 Select Folder to Scan", "📋 View Clipboard", "❌ Exit" }));
 
-                if (choice == "Exit") break;
-                if (choice == "Select Folder") HandleScan();
-                else if (choice == "View Clipboard")
+                if (choice == "❌ Exit") break;
+                if (choice == "📁 Select Folder to Scan") HandleScan();
+                else if (choice == "📋 View Clipboard")
                 {
-                    AnsiConsole.MarkupLine(_clipboardPath == null ? "[red]Clipboard is empty[/]" : $"[green]Copied:[/] {_clipboardPath}");
-                    AnsiConsole.WriteLine("Press any key to continue...");
+                    AnsiConsole.MarkupLine(_clipboardPath == null ? "[red]Empty[/]" : $"[green]Copied:[/] {_clipboardPath}");
+                    AnsiConsole.WriteLine("Press any key...");
                     Console.ReadKey(true);
                 }
             }
@@ -101,15 +95,67 @@ namespace DiplomnaRabotaConsole
 
         static void HandleScan()
         {
-            using var dialog = new FolderBrowserDialog();
-            dialog.Description = "Pick a directory to scan";
-            if (dialog.ShowDialog() == DialogResult.OK)
+            // Use our custom cross-platform terminal picker
+            string? selectedPath = PickFolderTerminal();
+
+            if (!string.IsNullOrEmpty(selectedPath))
             {
                 FileNode? root = null;
                 AnsiConsole.Status().Start("Scanning files...", ctx => {
-                    root = _scanner.ScanDirectory(dialog.SelectedPath);
+                    root = _scanner.ScanDirectory(selectedPath);
                 });
                 if (root != null) ShowBrowser(root);
+            }
+        }
+
+        // NEW: Cross-platform Terminal-based Folder Picker
+        static string? PickFolderTerminal()
+        {
+            // Start at Home directory or Root
+            string currentPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (string.IsNullOrEmpty(currentPath)) currentPath = Path.GetPathRoot(Directory.GetCurrentDirectory()) ?? "/";
+
+            while (true)
+            {
+                AnsiConsole.Clear();
+                AnsiConsole.MarkupLine($"[yellow]Select a Folder to Scan[/]");
+                AnsiConsole.MarkupLine($"[blue]Current Path:[/] {currentPath}");
+                AnsiConsole.Write(new Rule());
+
+                var prompt = new SelectionPrompt<string>()
+                    .PageSize(15)
+                    .AddChoices("[bold green]>> SELECT THIS FOLDER <<[/]")
+                    .AddChoices(".. (Back)");
+
+                try 
+                {
+                    var dirs = Directory.GetDirectories(currentPath)
+                                        .Select(d => "📁 " + Path.GetFileName(d))
+                                        .OrderBy(d => d);
+                    prompt.AddChoices(dirs);
+                }
+                catch { AnsiConsole.MarkupLine("[red]Access Denied[/]"); }
+
+                var choice = AnsiConsole.Prompt(prompt);
+
+                if (choice == "[bold green]>> SELECT THIS FOLDER <<[/]") return currentPath;
+                
+                if (choice == ".. (Back)")
+                {
+                    var parent = Directory.GetParent(currentPath);
+                    if (parent != null) currentPath = parent.FullName;
+                    else 
+                    {
+                        // On Windows, show drive letters if we hit the top
+                        var drives = DriveInfo.GetDrives().Select(d => d.Name).ToList();
+                        var driveChoice = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("Select Drive:").AddChoices(drives));
+                        currentPath = driveChoice;
+                    }
+                }
+                else
+                {
+                    currentPath = Path.Combine(currentPath, choice.Replace("📁 ", ""));
+                }
             }
         }
 
@@ -118,15 +164,13 @@ namespace DiplomnaRabotaConsole
             while (true)
             {
                 AnsiConsole.Clear();
-                AnsiConsole.Write(new Rule($"[blue]Folder: {folder.Name}[/]"));
+                AnsiConsole.Write(new Rule($"[blue]Browsing: {folder.Name}[/]"));
 
-                // Dynamic height logic
                 int dynamicPageSize = Math.Max(5, Console.WindowHeight - 8);
 
                 var prompt = new SelectionPrompt<FileNode>()
                     .PageSize(dynamicPageSize)
-                    .Title("[grey]Use Arrows to navigate, Enter to select, or Type to search[/]")
-                    .EnableSearch() // NEW: Allows typing to filter the list!
+                    .EnableSearch()
                     .UseConverter(n => n.FullPath == ".." ? "[yellow].. (Back)[/]" : 
                                       (n.IsDirectory ? $"[blue]📁 {n.Name}[/]" : $"[white]📄 {n.Name}[/] [grey]({n.FormattedSize})[/]"));
 
@@ -137,23 +181,20 @@ namespace DiplomnaRabotaConsole
                 if (selected.FullPath == "..") return;
 
                 var action = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                    .Title($"[yellow]Actions for {selected.Name}:[/]")
                     .AddChoices(selected.IsDirectory ? 
                         new[] { "Open", "Copy Path", "Paste Into", "Delete", "Cancel" } : 
                         new[] { "Copy Path", "Delete", "Cancel" }));
 
                 if (action == "Open") ShowBrowser(selected);
-                else if (action == "Copy Path") { _clipboardPath = selected.FullPath; }
-                else if (action == "Paste Into") { _scanner.CopyPath(_clipboardPath!, selected.FullPath); }
+                else if (action == "Copy Path") _clipboardPath = selected.FullPath;
+                else if (action == "Paste Into") _scanner.CopyPath(_clipboardPath!, selected.FullPath);
                 else if (action == "Delete")
                 {
-                    if (AnsiConsole.Confirm($"[red]Delete {selected.Name}?[/]"))
+                    if (AnsiConsole.Confirm("Delete this item?"))
                     {
-                        try {
-                            if (selected.IsDirectory) System.IO.Directory.Delete(selected.FullPath, true);
-                            else System.IO.File.Delete(selected.FullPath);
-                            folder.Children.Remove(selected);
-                        } catch (Exception ex) { AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]"); Console.ReadKey(); }
+                        if (selected.IsDirectory) Directory.Delete(selected.FullPath, true);
+                        else File.Delete(selected.FullPath);
+                        folder.Children.Remove(selected);
                     }
                 }
             }
