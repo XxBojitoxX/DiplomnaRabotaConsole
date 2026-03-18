@@ -80,11 +80,11 @@ namespace DiplomnaRabotaConsole
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[yellow]Main Menu[/]")
-                        .AddChoices(new[] { "📁 Select Folder to Scan", "📋 View Clipboard", "❌ Exit" }));
+                        .AddChoices(new[] { "Select Folder to Scan", "View Clipboard", "Exit" }));
 
-                if (choice == "❌ Exit") break;
-                if (choice == "📁 Select Folder to Scan") HandleScan();
-                else if (choice == "📋 View Clipboard")
+                if (choice == "Exit") break;
+                if (choice == "Select Folder to Scan") HandleScan();
+                else if (choice == "View Clipboard")
                 {
                     AnsiConsole.MarkupLine(_clipboardPath == null ? "[red]Empty[/]" : $"[green]Copied:[/] {_clipboardPath}");
                     AnsiConsole.WriteLine("Press any key...");
