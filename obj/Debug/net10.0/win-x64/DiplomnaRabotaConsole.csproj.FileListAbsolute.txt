@@ -3,6 +3,7 @@ C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\DiplomnaRabotaConsole.runtimeconfig.json
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\DiplomnaRabotaConsole.dll
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\DiplomnaRabotaConsole.pdb
+C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\Spectre.Console.dll
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\Microsoft.CSharp.dll
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\Microsoft.VisualBasic.Core.dll
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\Microsoft.VisualBasic.dll
@@ -190,6 +191,7 @@ C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\mscordbi.dll
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\mscorrc.dll
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\msquic.dll
+C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\obj\Debug\net10.0\win-x64\DiplomnaRabotaConsole.csproj.AssemblyReference.cache
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\obj\Debug\net10.0\win-x64\DiplomnaRabotaConsole.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\obj\Debug\net10.0\win-x64\DiplomnaRabotaConsole.AssemblyInfoInputs.cache
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\obj\Debug\net10.0\win-x64\DiplomnaRabotaConsole.AssemblyInfo.cs
@@ -201,5 +203,3 @@ C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\obj\Debug\net10.0\win-
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\obj\Debug\net10.0\win-x64\DiplomnaRabotaConsole.pdb
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\obj\Debug\net10.0\win-x64\DiplomnaRabotaConsole.genruntimeconfig.cache
 C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\obj\Debug\net10.0\win-x64\ref\DiplomnaRabotaConsole.dll
-C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\bin\Debug\net10.0\win-x64\Spectre.Console.dll
-C:\Users\bojkata\Documents\Diplomna\DiplomnaRabotaConsole\obj\Debug\net10.0\win-x64\DiplomnaRabotaConsole.csproj.AssemblyReference.cache

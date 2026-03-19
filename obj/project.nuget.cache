@@ -1,10 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "42pcoVSqQkI=",
+  "dgSpecHash": "EZ7LnZ8n+fU=",
   "success": true,
   "projectFilePath": "C:\\Users\\bojkata\\Documents\\Diplomna\\DiplomnaRabotaConsole\\DiplomnaRabotaConsole.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\bojkata\\.nuget\\packages\\spectre.console\\0.49.1\\spectre.console.0.49.1.nupkg.sha512"
+    "C:\\Users\\bojkata\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.5\\microsoft.net.illink.tasks.10.0.5.nupkg.sha512",
+    "C:\\Users\\bojkata\\.nuget\\packages\\spectre.console\\0.49.1\\spectre.console.0.49.1.nupkg.sha512",
+    "C:\\Users\\bojkata\\.nuget\\packages\\microsoft.netcore.app.runtime.osx-arm64\\10.0.5\\microsoft.netcore.app.runtime.osx-arm64.10.0.5.nupkg.sha512",
+    "C:\\Users\\bojkata\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.osx-arm64\\10.0.5\\microsoft.aspnetcore.app.runtime.osx-arm64.10.0.5.nupkg.sha512",
+    "C:\\Users\\bojkata\\.nuget\\packages\\microsoft.netcore.app.host.osx-arm64\\10.0.5\\microsoft.netcore.app.host.osx-arm64.10.0.5.nupkg.sha512"
   ],
   "logs": []
 }
